@@ -22,7 +22,8 @@ Ziele:
 Hier findest du thematisch gegliedert alle Bereiche meines Setups:
 
 1. [[file:01_infrastruktur/netzwerk.org][Infrastruktur & Netzwerk]]
-2. [[file:02_storage/synology.org][Storage & Backup]]
+2. [[file:02_storage/synology.org][Storage]]
+3. [[file:03_backup/borgbackup.org][Borg-Backup]]
 3. [[file:03_services/docker-compose.org][Selbstgehostete Dienste]]
 4. [[file:04_clients/workstation.org][Clients & Workstations]]
 5. [[file:05_automation/gotify.org][Automatisierung & Monitoring]]

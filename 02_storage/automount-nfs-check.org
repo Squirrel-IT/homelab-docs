@@ -1,0 +1,67 @@
+#+TITLE: Automount von NFS im Homelab
+#+AUTHOR: Sven Kromminga
+#+FILETAGS: :nfs:automount:mounts:homelab:
+
+* Ziel
+Diese Anleitung beschreibt, wie auf einem Linux-Client (z. B. Workstation „cortez“) eine NFS-Freigabe vom NAS automatisch eingebunden wird. Zusätzlich erfolgt eine regelmäßige Verfügbarkeitsprüfung.
+
+* Voraussetzungen
+- Synology NAS mit aktivierter NFS-Freigabe
+- Beispielpfad auf NAS: /volume1/homelabbackup
+- NAS-IP: 192.168.178.2
+- Mountpunkt lokal: /mnt/homelabbackup
+- Paket: nfs-common
+
+* Installation (einmalig)
+#+BEGIN_SRC bash
+sudo apt update
+sudo apt install nfs-common
+#+END_SRC
+
+* Mountpunkt erstellen
+#+BEGIN_SRC bash
+sudo mkdir -p /mnt/homelabbackup
+#+END_SRC
+
+* Fstab-Eintrag
+Füge folgenden Eintrag zu /etc/fstab hinzu:
+
+#+BEGIN_SRC fstab
+192.168.178.2:/volume1/homelabbackup /mnt/homelabbackup nfs noauto,x-systemd.automount,_netdev,nofail,x-systemd.device-timeout=10,timeo=14 0 0
+#+END_SRC
+
+* Automount aktivieren
+#+BEGIN_SRC bash
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo mount /mnt/homelabbackup
+#+END_SRC
+
+* Verfügbarkeitsprüfung (Script)
+Folgendes Script prüft, ob das Mount verfügbar ist und sendet optional eine Benachrichtigung via Gotify:
+
+#+BEGIN_SRC bash
+#!/bin/bash
+MOUNTPOINT="/mnt/homelabbackup"
+LOG="/var/log/nfs_check.log"
+
+if mountpoint -q "$MOUNTPOINT"; then
+  echo "$(date): OK – $MOUNTPOINT ist eingehängt" >> "$LOG"
+else
+  echo "$(date): FEHLER – $MOUNTPOINT ist NICHT eingehängt!" >> "$LOG"
+  # Optional Gotify oder E-Mail:
+  # curl -X POST ... (gotify notification)
+fi
+#+END_SRC
+
+* Cronjob für regelmäßige Prüfung (optional)
+#+BEGIN_SRC bash
+crontab -e
+# Beispiel: alle 15 Minuten prüfen
+*/15 * * * * /usr/local/bin/nfs-check.sh
+#+END_SRC
+
+* Status
+- [ ] Fstab-Eintrag getestet
+- [ ] Mountpunkt mit Daten befüllt
+- [ ] Prüfscript getestet
